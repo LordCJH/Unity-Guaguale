@@ -1508,12 +1508,23 @@ MonoBehaviour:
   textureHeight: 512
   brushSize: 28
   revealThreshold: 0.45
-  prizes:
-  - "\u4E00\u7B49\u5956: 100\u5143\u7EA2\u5305!"
-  - "\u4E8C\u7B49\u5956: 50\u5143\u4F18\u60E0\u5238"
-  - "\u4E09\u7B49\u5956: 10\u5143\u7EA2\u5305"
-  - "\u5E78\u8FD0\u5956: 5\u5143\u4F18\u60E0\u5238"
-  - "\u8C22\u8C22\u60E0\u987E\uFF0C\u518D\u8BD5\u4E00\u6B21!"
+  ticketPrice: 8
+  prizeMultipliers:
+  - 2
+  - 11
+  - 33
+  - 111
+  prizeNames:
+  - "\u4E09\u7B49\u5956"
+  - "\u4E8C\u7B49\u5956"
+  - "\u4E00\u7B49\u5956"
+  - "\u7279\u7B49\u5956"
+  prizeChances:
+  - 29.5
+  - 50
+  - 15
+  - 5
+  - 0.5
   scratchColor: {r: 0.78, g: 0.78, b: 0.78, a: 1}
 --- !u!4 &1818833337
 Transform:

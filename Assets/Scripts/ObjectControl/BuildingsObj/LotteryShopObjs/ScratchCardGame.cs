@@ -20,14 +20,17 @@ public class ScratchCardGame : MonoBehaviour
     [Range(0f, 1f)]
     public float revealThreshold = 0.45f;
 
-    [Header("奖品列表")]
-    public string[] prizes = new string[] {
-        "一等奖: 100元红包!",
-        "二等奖: 50元优惠券",
-        "三等奖: 10元红包",
-        "幸运奖: 5元优惠券",
-        "谢谢惠顾，再试一次!"
-    };
+    [Header("刮刮乐价位")]
+    public int ticketPrice = 8;
+
+    [Header("奖励倍数")]
+    public int[] prizeMultipliers = new int[] { 2, 11, 33, 111 };
+
+    [Header("奖励名称")]
+    public string[] prizeNames = new string[] { "三等奖", "二等奖", "一等奖", "特等奖" };
+
+    [Header("中奖概率 (未中奖 + 三等奖 + 二等奖 + 一等奖 + 特等奖) %")]
+    public float[] prizeChances = new float[] { 29.5f, 50f, 15f, 5f, 0.5f };
 
     [Header("颜色")]
     public Color scratchColor = new Color(0.78f, 0.78f, 0.78f, 1f);
@@ -45,18 +48,50 @@ public class ScratchCardGame : MonoBehaviour
     internal int textPixelsScratched;
     private string currentPrize;
     private int frameCounter;
+    private string[] _prizePool;
+    private int _losingIndex;
+    private bool _isWinner;
 
     void Start()
     {
         if (scratchImage != null)
             cardRect = scratchImage.GetComponent<RectTransform>();
 
+        BuildPrizePool();
         SetupButtonListeners();
 
         // 强制刷新 Canvas 布局，确保 RectTransform.rect 在 BuildTextMask 时已有正确值
         Canvas.ForceUpdateCanvases();
 
         NewGame();
+    }
+
+    int WeightedRandomIndex(float[] chances)
+    {
+        float total = 0f;
+        foreach (float c in chances) total += c;
+        float random = Random.Range(0f, total);
+        float cumulative = 0f;
+        for (int i = 0; i < chances.Length; i++)
+        {
+            cumulative += chances[i];
+            if (random < cumulative)
+                return i;
+        }
+        return chances.Length - 1;
+    }
+
+    void BuildPrizePool()
+    {
+        int count = prizeMultipliers.Length;
+        _prizePool = new string[count + 1];
+        _losingIndex = 0;
+        _prizePool[_losingIndex] = "谢谢惠顾，再试一次!";
+        for (int i = 0; i < count; i++)
+        {
+            int amount = ticketPrice * prizeMultipliers[i];
+            _prizePool[i + 1] = $"{prizeNames[i]}: ${amount}";
+        }
     }
 
     void SetupButtonListeners()
@@ -75,7 +110,9 @@ public class ScratchCardGame : MonoBehaviour
 
     void NewGame()
     {
-        currentPrize = prizes[Random.Range(0, prizes.Length)];
+        int prizeIndex = WeightedRandomIndex(prizeChances);
+        currentPrize = _prizePool[prizeIndex];
+        _isWinner = (prizeIndex != _losingIndex);
         if (prizeText != null) prizeText.text = currentPrize;
         if (congratsText != null) congratsText.text = "";
         if (progressText != null) progressText.text = "";
@@ -313,15 +350,15 @@ public class ScratchCardGame : MonoBehaviour
         if (progressText != null) progressText.text = "";
         if (congratsText != null)
         {
-            if (currentPrize.Contains("\u8c22\u8c22"))
-            {
-                congratsText.text = "\u54ce\u5440\uff0c\u6ca1\u4e2d\u5462";
-                congratsText.color = new Color(0.5f, 0.5f, 0.5f, 1f);
-            }
-            else
+            if (_isWinner)
             {
                 congratsText.text = "\u606d\u559c\u4e2d\u5956!";
                 congratsText.color = new Color(1f, 0.84f, 0f, 1f);
+            }
+            else
+            {
+                congratsText.text = "\u54ce\u5440\uff0c\u6ca1\u4e2d\u5462";
+                congratsText.color = new Color(0.5f, 0.5f, 0.5f, 1f);
             }
         }
     }
